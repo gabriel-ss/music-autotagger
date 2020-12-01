@@ -27,7 +27,7 @@ function mfcc(
 )
 
 	# Evaluate the melspectrogram
-	melspec = melspectrogram(signal, window, windowsize, overlap, sr, nmels, numcep)
+	melspec = melspectrogram(signal, sr, window, windowsize, overlap, numcep)
 
 	#Take the Type-III DCT of the log for each coeficient
 	return mapslices(frame->idct(log.(frame)), melspec, dims=1)
