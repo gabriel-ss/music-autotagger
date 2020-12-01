@@ -26,7 +26,10 @@ a stub one.
 """
 function chroma(signal, sr, window=ones, windowsize=2048, overlap=512, γ=0.1, ϵ=0.1)
 
-	sigstft = stft(signal, windowindowsize, overlap, window=window)
+	sigstft = stft(signal, windowsize, overlap, window=window)
+
+	# If the signal is real then the absolute value of it's spectrum is symmetric
+	eltype(signal)<:Real && (windowsize = windowsize ÷ 2 + 1)
 
 	# The number of chroma vectors is defined by the frames in the STFT
 	nofframes = size(sigstft)[2]
