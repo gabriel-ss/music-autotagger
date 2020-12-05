@@ -1,6 +1,5 @@
 using PackageCompiler
 
-println("Compiling sysimage...")
 create_sysimage([
 		:ArgParse,
 		:BSON,
@@ -13,5 +12,5 @@ create_sysimage([
 		:ProgressMeter,
 		:UnicodePlots,
 	];
-	project="../",
-	sysimage_path="../sysimage.so")
+	project=joinpath(@__DIR__, ".."),
+	sysimage_path=joinpath(@__DIR__, "../sysimage.so"))
