@@ -1,7 +1,15 @@
 #!/bin/bash
 #=
-exec julia --project --color=yes --startup-file=no -e 'include(popfirst!(ARGS))' \
-    "${BASH_SOURCE[0]}" "$@"
+project=$(dirname $0)/..
+sysimage=$project/sysimage.so
+
+if [ ! -e "$sysimage" ]; then
+	# echo not found
+	julia --project="$project" "$project/src/precompile.jl"
+fi
+
+exec julia --project=$project --sysimage="$sysimage" --startup-file=no \
+    --color=yes -e 'include(popfirst!(ARGS))' "${BASH_SOURCE[0]}" "$@"
 =#
 
 using Logging
