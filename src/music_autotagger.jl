@@ -12,7 +12,7 @@ exec julia --project=$project --sysimage="$sysimage" --startup-file=no \
     --color=yes -e 'include(popfirst!(ARGS))' "${BASH_SOURCE[0]}" "$@"
 =#
 
-using Logging
+using Logging, Dates
 include("./preprocess/preprocess.jl")
 include("./training/training.jl")
 include("./LazyDataLoader.jl")
@@ -20,7 +20,7 @@ include("./cliparser.jl")
 
 function main(options)
 
-	log_io = open(options["logfile"], "w+")
+	log_io = open("train-$(now).log", "w+")
 	global_logger(SimpleLogger(log_io))
 
 	if options["shufflesamples"]
