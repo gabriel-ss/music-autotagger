@@ -1,0 +1,4 @@
+models
+extracted_features/*
+*.so
+*.log
