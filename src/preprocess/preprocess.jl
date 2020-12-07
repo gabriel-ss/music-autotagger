@@ -79,10 +79,9 @@ end
 
 feature_list = Dict(
 	"chroma" => (signal, sr) ->
-		chroma(signal, sr, hanning, sr ÷ 20, 0, 0.1, 0.1),
+		chroma(signal, sr, hanning, Int(sr ÷ 20), 0, 0.1, 0.1),
 	"melspectrogram" => (signal, sr) ->
-		melspectrogram(signal, sr, hanning, sr ÷ 20, 0, 26),
+		melspectrogram(signal, sr, hanning, Int(sr ÷ 20), 0, 128),
 	"mfcc" => (signal, sr) ->
-		mfcc(signal, sr, hanning, sr ÷ 20, 0, 26),
+		mfcc(signal, sr, hanning, Int(sr ÷ 20), 0, 26),
 )
-

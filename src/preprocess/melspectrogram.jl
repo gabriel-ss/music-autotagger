@@ -20,7 +20,7 @@ Compute the melspectrogram of the given signal.
 `nmels`: The amount of mel bands to be extracted from the signal.
 """
 function melspectrogram(
-	signal, sr, window=ones, windowsize=2048, overlap=512, nmels=26
+	signal, sr, window=ones, windowsize=2048, overlap=512, nmels=128
 )
 
 	# Transform the input to mel scale
