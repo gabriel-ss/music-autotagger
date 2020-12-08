@@ -6,12 +6,15 @@ include("./dashboard.jl")
 include("./model_definitions.jl")
 
 
-function train_cnn(train_set, validation_set, modeloutputdir, n_of_epochs, log_io, model_path=nothing)
+function train_cnn(feature_shape, train_set, validation_set, modeloutputdir, n_of_epochs, log_io, model_path=nothing)
 
-	if model_path !== nothing
+	if model_path === nothing
+		model = create_model(feature_shape...)
+	else
 		BSON.@load model_path model
 	end
-	model = model |> gpu
+	model = gpu(model)
+
 	optmizer = ADAM(1E-3)
 	paramvec(m) = vcat(map(p->reshape(p, :), params(m))...)
 

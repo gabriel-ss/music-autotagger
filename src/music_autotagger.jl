@@ -20,8 +20,15 @@ include("./cliparser.jl")
 
 function main(options)
 
-	log_io = open("train-$(now).log", "w+")
+	log_io = open("train-$(now()).log", "w+")
 	global_logger(SimpleLogger(log_io))
+
+	feature_shape = Dict(
+		"chroma" => (12, 582),
+		"melspectrogram" => (128, 582),
+		"mfcc" => (26, 582),
+	)[options["selectedfeature"]]
+
 
 	if options["shufflesamples"]
 		shuffle_rows(options["tagsfile"])
@@ -49,13 +56,13 @@ function main(options)
 		end
 
 		# Create data loader to load data from disk to gpu on demand
-		train_set = LazyDataLoader(disk_lazy_load, train_set, batchsize=options["batchsize"])
+		train_set = LazyDataLoader(create_feature_loader(feature_shape), train_set, batchsize=options["batchsize"])
 
 		@info "Loading validation set..."
-		validation_set = (load_features(validation_set[1], (128, 582)), copy(validation_set[2]))
+		validation_set = (load_features(validation_set[1], feature_shape), copy(validation_set[2]))
 
-		train_cnn(train_set, validation_set, options["modeloutputdir"],
-			options["epochs"], log_io, options["model"])
+		train_cnn(feature_shape, train_set, validation_set,
+			options["modeloutputdir"], options["epochs"], log_io, options["model"])
 	end
 
 	close(log_io)
@@ -71,7 +78,9 @@ function load_features(filepaths, feature_shape)
 	return features
 end
 
-disk_lazy_load((filepaths, tags)) = (load_features(filepaths, (128, 582)), copy(tags)) |> gpu
+function create_feature_loader(feature_shape)
+	return ((filepaths, tags),) -> gpu((load_features(filepaths, feature_shape), copy(tags)))
+end
 
 
 main(options)
