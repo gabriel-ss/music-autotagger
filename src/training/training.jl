@@ -6,7 +6,8 @@ include("./dashboard.jl")
 include("./model_definitions.jl")
 
 
-function train_cnn(feature_shape, train_set, validation_set, modeloutputdir, n_of_epochs, log_io, model_path=nothing)
+function train_cnn(feature_shape, train_set, validation_set, n_of_epochs,
+	model_output_dir, dump_output_dir, log_io, model_path=nothing)
 
 	if model_path === nothing
 		model = create_model(feature_shape...)
@@ -15,7 +16,7 @@ function train_cnn(feature_shape, train_set, validation_set, modeloutputdir, n_o
 	end
 	model = gpu(model)
 
-	optmizer = ADAM(1E-3)
+	optmizer = ADAM(1E-5)
 	paramvec(m) = vcat(map(p->reshape(p, :), params(m))...)
 
 	function accuracy(x, y)
@@ -32,8 +33,14 @@ function train_cnn(feature_shape, train_set, validation_set, modeloutputdir, n_o
 	loss(x, y) = Flux.Losses.logitbinarycrossentropy(model(x), y)
 
 
-	mkpath(modeloutputdir)
-	acc_dump = open("acc_dump$(now())", "w+")
+	start_time = now()
+	training_day = Dates.format(start_time, "yyyy-mm-dd")
+	training_time = Dates.format(start_time, "HH-MM-SS")
+	dump_output_dir = mkpath(joinpath(dump_output_dir, training_day))
+	model_output_dir = mkpath(joinpath(model_output_dir, training_day))
+	acc_dump = open(joinpath(dump_output_dir, "acc_dump_$(training_time)"), "w+")
+	loss_dump = open(joinpath(dump_output_dir, "loss_dump_$(training_time)"), "w+")
+
 	dashboard_height, dashboard_width = (20, 80)
 	mean_acc = 0.0
 	last_improvement = 0
@@ -46,11 +53,10 @@ function train_cnn(feature_shape, train_set, validation_set, modeloutputdir, n_o
 
 	try
 		@info("Beginning training loop...")
-		start_time = now()
 		for current_epoch in 1:n_of_epochs
 
 			# Train for a single epoch
-			Flux.train!(loss, params(model), train_set, optmizer)
+			train_model!(loss, params(model), train_set, optmizer, loss_dump)
 
 			if any(isnan.(paramvec(model)))
 				@error "NaN params"
@@ -64,9 +70,9 @@ function train_cnn(feature_shape, train_set, validation_set, modeloutputdir, n_o
 			@info(@sprintf("[%d]: Test accuracy: %.4f", current_epoch, mean_acc))
 
 			if mean_acc >= best_mean_acc
-				 @info(" -> New best accuracy")
-				 best_mean_acc = mean_acc
-				 last_improvement = current_epoch
+				@info(" -> New best accuracy")
+				best_mean_acc = mean_acc
+				last_improvement = current_epoch
 			end
 
 			print("\r\u001b[$(dashboard_height + 2)A")
@@ -74,7 +80,9 @@ function train_cnn(feature_shape, train_set, validation_set, modeloutputdir, n_o
 				push!(accuracy_curve, mean_acc), target_acc, best_mean_acc,
 				height=dashboard_height, width=dashboard_width,)
 
-			BSON.@save joinpath(modeloutputdir, "model-$mean_acc-$(now()).bson") model=cpu(model) current_epoch mean_acc
+			model_file_path = joinpath(model_output_dir,
+				@sprintf("model_acc%.3f_%s.bson", mean_acc, Dates.format(now(), "HH-MM-SS")))
+			BSON.@save model_file_path model=cpu(model) current_epoch mean_acc
 
 			if mean_acc >= target_acc
 				@info("Target accuracy reached")
@@ -104,7 +112,21 @@ function train_cnn(feature_shape, train_set, validation_set, modeloutputdir, n_o
 
 	finally
 		close(acc_dump)
+		close(loss_dump)
 	end
+end
 
 
+function train_model!(loss, ps, data, opt, loss_dump)
+	local training_loss
+	ps = Flux.Optimise.Params(ps)
+	for d in data
+		gs = Flux.Optimise.gradient(ps) do
+			training_loss = loss(d...)
+		end
+		write(loss_dump, training_loss)
+		Flux.Optimise.update!(opt, ps, gs)
+		training_loss = loss(d...)
+		write(loss_dump, training_loss)
+	end
 end

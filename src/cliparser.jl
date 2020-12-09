@@ -35,7 +35,7 @@ function parse_commandline()
 			arg_type = String
 			default = "melspectrogram"
 
-		"--audiofeaturesdir", "-d"
+		"--audiofeaturesdir", "-F"
 			help = "the directory to save extracted features after preprocessing " *
 					"and to read features before training, will be appended to the " *
 					"paths found in the CSV file to generate a filepath for each " *
@@ -47,11 +47,16 @@ function parse_commandline()
 					"trained"
 			arg_type = String
 
-		"--modeloutputdir", "-o"
+		"--modeloutputdir", "-M"
 			help = "the directory to save model parameters learned during the " *
-					"training process, flags that should be ignored"
+					"training process"
 			arg_type = String
 			default = "./models"
+
+		"--dumpoutputdir", "-D"
+			help = "the directory to save dump files of loss/accuracy data"
+			arg_type = String
+			default = "./data_dump"
 
 		"--epochs", "-e"
 			help = "the number of training epochs"

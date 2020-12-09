@@ -1,4 +1,5 @@
 models
 extracted_features/*
+data_dump/*
 *.so
 *.log

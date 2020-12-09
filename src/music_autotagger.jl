@@ -20,7 +20,7 @@ include("./cliparser.jl")
 
 function main(options)
 
-	log_io = open("train-$(now()).log", "w+")
+	log_io = open("train-$(Dates.format(now(), "yyyy-mm-ddTHH-MM-SS")).log", "w+")
 	global_logger(SimpleLogger(log_io))
 
 	feature_shape = Dict(
@@ -62,7 +62,8 @@ function main(options)
 		validation_set = (load_features(validation_set[1], feature_shape), copy(validation_set[2]))
 
 		train_cnn(feature_shape, train_set, validation_set,
-			options["modeloutputdir"], options["epochs"], log_io, options["model"])
+			options["epochs"], options["modeloutputdir"], options["dumpoutputdir"],
+			log_io, options["model"])
 	end
 
 	close(log_io)
