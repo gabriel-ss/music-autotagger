@@ -73,16 +73,16 @@ function train_cnn(feature_shape, train_set, validation_set, n_of_epochs,
 				@info(" -> New best accuracy")
 				best_mean_acc = mean_acc
 				last_improvement = current_epoch
+
+				model_file_name = @sprintf("model_acc%.3f_%s.bson", mean_acc, Dates.format(now(), "HH-MM-SS"))
+				model_file_path = joinpath(model_output_dir, model_file_name)
+				BSON.@save model_file_path model=cpu(model) current_epoch mean_acc
 			end
 
 			print("\r\u001b[$(dashboard_height + 2)A")
 			show_dashboard(current_epoch, n_of_epochs, start_time,
 				push!(accuracy_curve, mean_acc), target_acc, best_mean_acc,
 				height=dashboard_height, width=dashboard_width,)
-
-			model_file_path = joinpath(model_output_dir,
-				@sprintf("model_acc%.3f_%s.bson", mean_acc, Dates.format(now(), "HH-MM-SS")))
-			BSON.@save model_file_path model=cpu(model) current_epoch mean_acc
 
 			if mean_acc >= target_acc
 				@info("Target accuracy reached")
