@@ -119,14 +119,12 @@ end
 
 function train_model!(loss, ps, data, opt, loss_dump)
 	local training_loss
-	ps = Flux.Optimise.Params(ps)
+	ps = Flux.Params(ps)
 	for d in data
-		gs = Flux.Optimise.gradient(ps) do
+		gs = Flux.gradient(ps) do
 			training_loss = loss(d...)
 		end
 		write(loss_dump, training_loss)
-		Flux.Optimise.update!(opt, ps, gs)
-		training_loss = loss(d...)
-		write(loss_dump, training_loss)
+		Flux.update!(opt, ps, gs)
 	end
 end
