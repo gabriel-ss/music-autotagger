@@ -52,7 +52,13 @@ function train_cnn(feature_shape, train_set, validation_set, n_of_epochs,
 
 
 	try
-		@info("Beginning training loop...")
+		@info("""
+		Beginning training loop...
+		- feature shape: $(feature_shape)
+		- initial learning rate: $(eta)
+		- batchsize: $(train_set.batchsize)
+		- number of epochs: $(n_of_epochs)
+		""")
 		for current_epoch in 1:n_of_epochs
 
 			# Train for a single epoch
