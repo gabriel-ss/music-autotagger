@@ -68,6 +68,11 @@ function parse_commandline()
 			arg_type = Int
 			default = 5
 
+		"--eta", "-n"
+			help = "the initial learning rate to be used when training"
+			arg_type = Float64
+			default = 1E-3
+
 	end
 
 	args = parse_args(settings)

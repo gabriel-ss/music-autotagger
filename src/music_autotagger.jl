@@ -63,7 +63,7 @@ function main(options)
 
 		train_cnn(feature_shape, train_set, validation_set,
 			options["epochs"], options["modeloutputdir"], options["dumpoutputdir"],
-			log_io, options["model"])
+			log_io, options["eta"], options["model"])
 	end
 
 	close(log_io)

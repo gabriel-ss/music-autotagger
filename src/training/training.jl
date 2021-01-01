@@ -7,7 +7,7 @@ include("./model_definitions.jl")
 
 
 function train_cnn(feature_shape, train_set, validation_set, n_of_epochs,
-	model_output_dir, dump_output_dir, log_io, model_path=nothing)
+	model_output_dir, dump_output_dir, log_io, eta, model_path=nothing)
 
 	if model_path === nothing
 		model = create_model(feature_shape...)
@@ -16,7 +16,7 @@ function train_cnn(feature_shape, train_set, validation_set, n_of_epochs,
 	end
 	model = gpu(model)
 
-	optmizer = ADAM(1E-5)
+	optmizer = ADAM(eta)
 	paramvec(m) = vcat(map(p->reshape(p, :), params(m))...)
 
 	function accuracy(x, y)
